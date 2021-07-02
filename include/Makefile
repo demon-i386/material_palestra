@@ -18,12 +18,8 @@ shared:
 	@ $(CC) -c -Wall -Werror -fpic external.c # compilando com PIC (position independant code)
 	@ $(CC) -shared -o libexternal.so external.o # criando shared object do objeto
 	@ $(CC) -L. -o main-shared main.c -lexternal
-	@ export LD_LIBRARY_PATH=$(PWD)/:$(LD_LIBRARY_PATH)
+	@ export LD_LIBRARY_PATH=$(PWD)/:LD_LIBRARY_PATH
 
 	# LD_LIBARY_PATH é uma váriável de ambiente que enumera pastas onde devem
 	# ser procuradas bibliotecas
 
-	# bibliotecas compartilhadas tem seus simbolos "mapeados" na memória virtual
-	# de um processo
-
-	#
