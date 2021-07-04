@@ -9,7 +9,7 @@ static:
 	@ $(CC) -c main.c -o main.o
 	@ $(CC) -c external.c -o external.o
 	@ ar crv ./libstatic.a ./external.o
-	@ $(CC) main.o  -L. -lstatic -o main-static
+	@ $(CC) main.o  -L. -lstatic -o main-static -static
 
 shared:
 	# gcc assume que todas as bibliotecas compartilhadas começam com "lib" e terminam
@@ -18,8 +18,9 @@ shared:
 	@ $(CC) -c -Wall -Werror -fpic external.c # compilando com PIC (position independant code)
 	@ $(CC) -shared -o libexternal.so external.o # criando shared object do objeto
 	@ $(CC) -L. -o main-shared main.c -lexternal
-	@ export LD_LIBRARY_PATH=$(PWD)/:LD_LIBRARY_PATH
+	@ export LD_LIBRARY_PATH=$PWD/:LD_LIBRARY_PATH
 
 	# LD_LIBARY_PATH é uma váriável de ambiente que enumera pastas onde devem
 	# ser procuradas bibliotecas
-
+clean:
+	@ rm -rf main-static main-shared *.a *.so *.o
